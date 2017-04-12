@@ -22,19 +22,7 @@ public class SumSalaryByDistributedExecutor {
         List<Future<?>> tasks = new ArrayList<>(1000);
 
         for (int i = 0; i < 1000; ++i) {
-            tasks.add(
-                salaries.submitToKey("Employee-" + i, new EntryProcessor<String, Integer>() {
-                    @Override
-                    public Object process(Map.Entry<String, Integer> entry) {
-                        return entry.getValue() / 100;
-                    }
-
-                    @Override
-                    public EntryBackupProcessor<String, Integer> getBackupProcessor() {
-                        return null;
-                    }
-                })
-            );
+            tasks.add(salaries.submitToKey("Employee-" + i, new EmployeeEntryProcessor()));
         }
 
         int sum = 0;
@@ -47,4 +35,16 @@ public class SumSalaryByDistributedExecutor {
         System.out.println("Aggregated sum: " + sum + " computed in " + timeTaken + "ms");
     }
 
+}
+
+class EmployeeEntryProcessor implements EntryProcessor<String, Integer>() {
+    @Override
+    public Object process(Map.Entry<String, Integer> entry) {
+        return entry.getValue() / 100;
+    }
+
+    @Override
+    public EntryBackupProcessor<String, Integer> getBackupProcessor() {
+        return null;
+    }
 }
